@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component } from "react";
 import {
   Platform,
   StyleSheet,
@@ -7,11 +7,10 @@ import {
   TouchableOpacity,
   View,
   ViewPropTypes,
-  TouchableWithoutFeedback,
-} from 'react-native';
-import PropTypes from 'prop-types';
-import isEqual from 'lodash.isequal';
-
+  TouchableWithoutFeedback
+} from "react-native";
+import PropTypes from "prop-types";
+import isEqual from "lodash.isequal";
 
 const PAGE_CHANGE_DELAY = 4000;
 
@@ -21,48 +20,16 @@ const viewPropTypes = ViewPropTypes || View.propTypes;
 /**
  * Animates pages in cycle
  * (loop possible if children count > 1)
-*/
+ */
 export default class Carousel extends Component {
-  static propTypes = {
-    children: PropTypes.node.isRequired,
-    autoplay: PropTypes.bool,
-    delay: PropTypes.number,
-    currentPage: PropTypes.number,
-    style: viewPropTypes.style,
-    pageStyle: viewPropTypes.style,
-    contentContainerStyle: viewPropTypes.style,
-    pageInfo: PropTypes.bool,
-    pageInfoBackgroundColor: PropTypes.string,
-    pageInfoTextStyle: Text.propTypes.style,
-    pageInfoBottomContainerStyle: viewPropTypes.style,
-    pageInfoTextSeparator: PropTypes.string,
-    bullets: PropTypes.bool,
-    bulletsContainerStyle: Text.propTypes.style,
-    bulletStyle: Text.propTypes.style,
-    arrows: PropTypes.bool,
-    arrowsContainerStyle: Text.propTypes.style,
-    arrowStyle: Text.propTypes.style,
-    leftArrowText: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.element,
-    ]),
-    rightArrowText: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.element,
-    ]),
-    chosenBulletStyle: Text.propTypes.style,
-    onAnimateNextPage: PropTypes.func,
-    swipe: PropTypes.bool,
-  };
-
   static defaultProps = {
     delay: PAGE_CHANGE_DELAY,
     autoplay: true,
     pageInfo: false,
     bullets: false,
     arrows: false,
-    pageInfoBackgroundColor: 'rgba(0, 0, 0, 0.25)',
-    pageInfoTextSeparator: ' / ',
+    pageInfoBackgroundColor: "rgba(0, 0, 0, 0.25)",
+    pageInfoTextSeparator: " / ",
     currentPage: 0,
     style: undefined,
     pageStyle: undefined,
@@ -74,10 +41,10 @@ export default class Carousel extends Component {
     bulletStyle: undefined,
     arrowsContainerStyle: undefined,
     arrowStyle: undefined,
-    leftArrowText: '',
-    rightArrowText: '',
+    leftArrowText: "",
+    rightArrowText: "",
     onAnimateNextPage: undefined,
-    swipe: true,
+    swipe: true
   };
 
   constructor(props) {
@@ -89,7 +56,7 @@ export default class Carousel extends Component {
         currentPage: props.currentPage,
         size,
         childrenLength,
-        contents: null,
+        contents: null
       };
     } else {
       this.state = { size };
@@ -141,12 +108,17 @@ export default class Carousel extends Component {
       } else if (children) {
         pages.push(children[0]);
       } else {
-        pages.push(<View><Text>
-            You are supposed to add children inside Carousel
-        </Text></View>);
+        pages.push(
+          <View>
+            <Text>You are supposed to add children inside Carousel</Text>
+          </View>
+        );
       }
       this.pages = pages.map((page, i) => (
-        <TouchableWithoutFeedback style={[{ ...size }, this.props.pageStyle]} key={`page${i}`}>
+        <TouchableWithoutFeedback
+          style={[{ ...size }, this.props.pageStyle]}
+          key={`page${i}`}
+        >
           {page}
         </TouchableWithoutFeedback>
       ));
@@ -160,24 +132,24 @@ export default class Carousel extends Component {
 
   _onScrollBegin = () => {
     this._clearTimer();
-  }
+  };
 
-  _setCurrentPage = (currentPage) => {
+  _setCurrentPage = currentPage => {
     this.setState({ currentPage }, () => {
       if (this.props.onAnimateNextPage) {
         // FIXME: called twice on ios with auto-scroll
         this.props.onAnimateNextPage(currentPage);
       }
     });
-  }
+  };
 
-  _onScrollEnd = (event) => {
+  _onScrollEnd = event => {
     const offset = { ...event.nativeEvent.contentOffset };
     const page = this._calculateCurrentPage(offset.x);
     this._placeCritical(page);
     this._setCurrentPage(page);
     this._setUpTimer();
-  }
+  };
 
   _onLayout = () => {
     this.container.measure((x, y, w, h) => {
@@ -185,11 +157,11 @@ export default class Carousel extends Component {
       // remove setTimeout wrapper when https://github.com/facebook/react-native/issues/6849 is resolved.
       setTimeout(() => this._placeCritical(this.state.currentPage), 0);
     });
-  }
+  };
 
   _clearTimer = () => {
     clearTimeout(this.timer);
-  }
+  };
 
   _setUpTimer = () => {
     // only for cycling
@@ -197,25 +169,25 @@ export default class Carousel extends Component {
       this._clearTimer();
       this.timer = setTimeout(this._animateNextPage, this.props.delay);
     }
-  }
+  };
 
   _scrollTo = ({ offset, animated, nofix }) => {
     if (this.scrollView) {
       this.scrollView.scrollTo({ y: 0, x: offset, animated });
 
       // Fix bug #50
-      if (!nofix && Platform.OS === 'android' && !animated) {
+      if (!nofix && Platform.OS === "android" && !animated) {
         this.scrollView.scrollTo({ y: 0, x: offset, animated: true });
       }
     }
-  }
+  };
 
   _animateNextPage = () => {
     const { currentPage } = this.state;
     this.animateToPage(this._normalizePageNumber(currentPage + 1));
-  }
+  };
 
-  animateToPage = (page) => {
+  animateToPage = page => {
     let currentPage = page;
     this._clearTimer();
     const { width } = this.state.size;
@@ -227,23 +199,27 @@ export default class Carousel extends Component {
       // animate properly based on direction
       const scrollMultiplier = this.state.currentPage === 1 ? 1 : -1;
       this._scrollTo({
-        offset: (childrenLength + (1 * scrollMultiplier)) * width,
+        offset: (childrenLength + 1 * scrollMultiplier) * width,
         animated: false,
-        nofix: true,
+        nofix: true
       });
       this._scrollTo({ offset: childrenLength * width, animated: true });
     } else if (currentPage === 1) {
       const scrollMultiplier = this.state.currentPage === 0 ? 0 : 2;
-      this._scrollTo({ offset: width * scrollMultiplier, animated: false, nofix: true });
+      this._scrollTo({
+        offset: width * scrollMultiplier,
+        animated: false,
+        nofix: true
+      });
       this._scrollTo({ offset: width, animated: true });
     } else {
       this._scrollTo({ offset: currentPage * width, animated: true });
     }
     this._setCurrentPage(currentPage);
     this._setUpTimer();
-  }
+  };
 
-  _placeCritical = (page) => {
+  _placeCritical = page => {
     const { childrenLength } = this.state;
     const { width } = this.state.size;
     if (childrenLength === 1) {
@@ -255,9 +231,9 @@ export default class Carousel extends Component {
     } else {
       this._scrollTo({ offset: page * width, animated: false });
     }
-  }
+  };
 
-  _normalizePageNumber = (page) => {
+  _normalizePageNumber = page => {
     const { childrenLength } = this.state;
     if (page === childrenLength) {
       return 0;
@@ -265,49 +241,68 @@ export default class Carousel extends Component {
       return 1;
     }
     return page;
-  }
+  };
 
-  _calculateCurrentPage = (offset) => {
+  _calculateCurrentPage = offset => {
     const { width } = this.state.size;
     const page = Math.floor(offset / width);
     return this._normalizePageNumber(page);
-  }
+  };
 
-  _renderPageInfo = (pageLength) =>
-    (<View style={[styles.pageInfoBottomContainer, this.props.pageInfoBottomContainerStyle]} pointerEvents="none">
+  _renderPageInfo = pageLength => (
+    <View
+      style={[
+        styles.pageInfoBottomContainer,
+        this.props.pageInfoBottomContainerStyle
+      ]}
+      pointerEvents="none"
+    >
       <View style={styles.pageInfoContainer}>
         <View
-          style={[styles.pageInfoPill, { backgroundColor: this.props.pageInfoBackgroundColor }]}
+          style={[
+            styles.pageInfoPill,
+            { backgroundColor: this.props.pageInfoBackgroundColor }
+          ]}
         >
-          <Text
-            style={[styles.pageInfoText, this.props.pageInfoTextStyle]}
-          >
-            {`${this.state.currentPage + 1}${this.props.pageInfoTextSeparator}${pageLength}`}
+          <Text style={[styles.pageInfoText, this.props.pageInfoTextStyle]}>
+            {`${this.state.currentPage + 1}${
+              this.props.pageInfoTextSeparator
+            }${pageLength}`}
           </Text>
         </View>
       </View>
-    </View>)
+    </View>
+  );
 
-  _renderBullets = (pageLength) => {
+  _renderBullets = pageLength => {
     const bullets = [];
     for (let i = 0; i < pageLength; i += 1) {
       bullets.push(
-        <TouchableWithoutFeedback onPress={() => this.animateToPage(i)} key={`bullet${i}`}>
+        <TouchableWithoutFeedback
+          onPress={() => this.animateToPage(i)}
+          key={`bullet${i}`}
+        >
           <View
-            style={i === this.state.currentPage ?
-              [styles.chosenBullet, this.props.chosenBulletStyle] :
-              [styles.bullet, this.props.bulletStyle]}
+            style={
+              i === this.state.currentPage
+                ? [styles.chosenBullet, this.props.chosenBulletStyle]
+                : [styles.bullet, this.props.bulletStyle]
+            }
           />
-        </TouchableWithoutFeedback>);
+        </TouchableWithoutFeedback>
+      );
     }
     return (
       <View style={styles.bullets} pointerEvents="box-none">
-        <View style={[styles.bulletsContainer, this.props.bulletsContainerStyle]} pointerEvents="box-none">
+        <View
+          style={[styles.bulletsContainer, this.props.bulletsContainerStyle]}
+          pointerEvents="box-none"
+        >
           {bullets}
         </View>
       </View>
     );
-  }
+  };
 
   _renderArrows = () => {
     let { currentPage } = this.state;
@@ -317,21 +312,44 @@ export default class Carousel extends Component {
     }
     return (
       <View style={styles.arrows} pointerEvents="box-none">
-        <View style={[styles.arrowsContainer, this.props.arrowsContainerStyle]} pointerEvents="box-none">
-          <TouchableOpacity onPress={() => this.animateToPage(this._normalizePageNumber(currentPage - 1))} style={this.props.arrowStyle}><Text>{this.props.leftArrowText ? this.props.leftArrowText : 'Left'}</Text></TouchableOpacity>
-          <TouchableOpacity onPress={() => this.animateToPage(this._normalizePageNumber(currentPage + 1))} style={this.props.arrowStyle}><Text>{this.props.rightArrowText ? this.props.rightArrowText : 'Right'}</Text></TouchableOpacity>
+        <View
+          style={[styles.arrowsContainer, this.props.arrowsContainerStyle]}
+          pointerEvents="box-none"
+        >
+          <TouchableOpacity
+            onPress={() =>
+              this.animateToPage(this._normalizePageNumber(currentPage - 1))
+            }
+            style={this.props.arrowStyle}
+          >
+            <Text>
+              {this.props.leftArrowText ? this.props.leftArrowText : "Left"}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() =>
+              this.animateToPage(this._normalizePageNumber(currentPage + 1))
+            }
+            style={this.props.arrowStyle}
+          >
+            <Text>
+              {this.props.rightArrowText ? this.props.rightArrowText : "Right"}
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
-  }
+  };
 
   render() {
     const { contents } = this.state;
 
     const containerProps = {
-      ref: (c) => { this.container = c; },
+      ref: c => {
+        this.container = c;
+      },
       onLayout: this._onLayout,
-      style: [this.props.style],
+      style: [this.props.style]
     };
 
     const { size } = this.state;
@@ -340,7 +358,9 @@ export default class Carousel extends Component {
     return (
       <View {...containerProps}>
         <ScrollView
-          ref={(c) => { this.scrollView = c; }}
+          ref={c => {
+            this.scrollView = c;
+          }}
           onScrollBeginDrag={this._onScrollBegin}
           onMomentumScrollEnd={this._onScrollEnd}
           alwaysBounceHorizontal={false}
@@ -356,9 +376,10 @@ export default class Carousel extends Component {
             styles.horizontalScroll,
             this.props.contentContainerStyle,
             {
-              width: size.width * (childrenLength + (childrenLength > 1 ? 2 : 0)),
-              height: size.height,
-            },
+              width:
+                size.width * (childrenLength + (childrenLength > 1 ? 2 : 0)),
+              height: size.height
+            }
           ]}
         >
           {contents}
@@ -373,74 +394,74 @@ export default class Carousel extends Component {
 
 const styles = StyleSheet.create({
   horizontalScroll: {
-    position: 'absolute',
+    position: "absolute"
   },
   pageInfoBottomContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 20,
     left: 0,
     right: 0,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent"
   },
   pageInfoContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'transparent',
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "transparent"
   },
   pageInfoPill: {
     width: 80,
     height: 20,
     borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center"
   },
   pageInfoText: {
-    textAlign: 'center',
+    textAlign: "center"
   },
   bullets: {
-    position: 'absolute',
+    position: "absolute",
     left: 0,
     right: 0,
     bottom: 10,
     height: 30,
-    backgroundColor: 'transparent',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
+    backgroundColor: "transparent",
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row"
   },
   arrows: {
-    position: 'absolute',
+    position: "absolute",
     left: 0,
     right: 0,
     bottom: 0,
     top: 0,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent"
   },
   arrowsContainer: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between"
   },
   bulletsContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row"
   },
   chosenBullet: {
     margin: 10,
     width: 10,
     height: 10,
     borderRadius: 20,
-    backgroundColor: 'white',
+    backgroundColor: "white"
   },
   bullet: {
     margin: 10,
     width: 10,
     height: 10,
     borderRadius: 20,
-    backgroundColor: 'transparent',
-    borderColor: 'white',
-    borderWidth: 1,
-  },
+    backgroundColor: "transparent",
+    borderColor: "white",
+    borderWidth: 1
+  }
 });
